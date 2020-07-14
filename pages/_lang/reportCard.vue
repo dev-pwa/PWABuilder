@@ -1,4 +1,5 @@
 <template>
+
   <div id="hubContainer" :class="{ backgroundReport: gotURL, backgroundIndex: !gotURL }">
     <HubHeader
       v-on:reset="reset()"
@@ -6,6 +7,52 @@
       :showSubHeader="gotURL"
       :expanded="!gotURL"
     ></HubHeader>
+
+    <div
+      v-if="showBackground"
+      class="has-acrylic-40 is-dark"
+      id="modalBackground"
+    ></div>
+
+    <Modal
+        id="showcaseModal"
+        title="Submit to PWA Showcase"
+        button_name="Done"
+        ref="PWAShowcaseModal"
+        v-on:modalClosed="modalClosed()">
+        <div id="fullPage">
+          <div id="center">
+
+            <div id="headerText">
+              <h1>PWA Showcase App Submission</h1>
+              <p>Submit your app to be featured in the PWA Showcase Catalog.</p>
+            </div>
+            <div id="wrapper">
+              <div id="supportCheckbox">
+                <h4>Select the browsers your PWA supports:</h4>
+                <ul id="supportList">
+                  <li><input type="checkbox" class="categoryCheckbox" name="Edge" value="Edge"><label for="Edge">Edge</label></li>
+                  <li><input type="checkbox" class="categoryCheckbox" name="Chrome" value="Chrome"><label for="Chrome">Chrome</label></li>
+                  <li><input type="checkbox" class="categoryCheckbox" name="Firefox" value="Firefox"><label for="Firefox">Firefox</label></li>
+                  <li><input type="checkbox" class="categoryCheckbox" name="Samsung Internet" value="Samsung Internet"><label for="Samsung Internet">Samsung Internet</label></li>
+                  <li><input type="checkbox" class="categoryCheckbox" name="Safari" value="Safari"><label for="Safari">Safari</label></li>
+                </ul>
+              </div>
+              <div id="categoryPicker">
+            
+                <h4>  Select the categories that apply to your PWA:</h4>
+                <ul id="catSelector">
+                  <li v-for="cat in categories" :key="cat">
+                    <input type="checkbox" class="categoryCheckbox" :name="cat" :value="cat"><label :for="cat">{{cat}}</label>
+                  </li>
+                </ul>
+                <button id="submitPWA"><p>Submit my PWA!</p></button>
+            </div>
+            </div>
+
+          </div>
+        </div>
+      </Modal>
 
     <div v-if="showCopyToast" id="gitCopyToast">
       <span>git clone command copied to your clipboard</span>
@@ -134,6 +181,12 @@
             id="buildLink"
             to="/publish"
           >Build My PWA</nuxt-link>
+          <button
+            @click="modalOpened()"
+            id="submitToShowcase"
+          >
+            Submit to Showcase
+          </button>
           <a
             @click="$awa( { 'referrerUri': 'https://www.pwabuilder.com/featuresFromHome' });"
             id="featuresLink"
@@ -207,6 +260,7 @@ import { Action, State, namespace } from "vuex-class";
 import HubHeader from "~/components/HubHeader.vue";
 import ScoreCard from "~/components/ScoreCard.vue";
 import FeatureCard from "~/components/FeatureCard.vue";
+import Modal from "~/components/Modal.vue";
 
 import * as generator from "~/store/modules/generator";
 
@@ -222,7 +276,8 @@ const WindowsAction = namespace(windowsStore.name, Action);
   components: {
     HubHeader,
     ScoreCard,
-    FeatureCard
+    FeatureCard,
+    Modal
   }
 })
 export default class extends Vue {
@@ -248,6 +303,47 @@ export default class extends Vue {
   public showCopyToast: boolean = false;
   public showShareToast: boolean = false;
 
+  public modalStatus = false;
+  public showBackground: boolean = false;
+  public categories: any[] = [];
+  public catVue = new Vue({
+  el: '#catSelector',
+  data: {
+    items: this.categories
+  }
+})
+
+  public modalOpened() {
+    console.log("hit");
+    window.scrollTo(0, 0);
+
+    this.getCategories();
+
+    this.modalStatus = true;
+    this.showBackground = true;
+    (this.$refs.PWAShowcaseModal as Modal).show();
+  }
+
+  public modalClosed() {
+    this.modalStatus = false;
+    this.showBackground = false;
+  }
+
+  public pwaModalCancelled() {
+    this.modalStatus = false;
+    this.showBackground = false;
+    (this.$refs.PWAShowcaseModal as Modal).hide();
+  }
+
+  public async getCategories() {
+    const resp = await fetch('/data/categories.json')
+    const data = await resp.json();
+    console.log(data);
+    this.categories = data.categories;
+}
+
+
+  
   public async created() {
     this.url$ = this.url;
 
@@ -566,7 +662,7 @@ declare var awa: any;
   height: 3em;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 #attachSectionActions #buildLink {
@@ -604,6 +700,116 @@ declare var awa: any;
   border-radius: 20px;
   height: 40px;
   margin-left: 12px;
+}
+
+#attachSectionActions #submitToShowcase {
+  justify-content: center;
+  padding-left: 20px;
+  padding-right: 20px;
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 21px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  background:  #686bd2;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  height: 40px;
+  margin-left: 12px;
+}
+
+#modalBackground {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 98999;
+  will-change: opacity;
+}
+
+#fullPage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#center {
+  width: 900px;
+  margin: auto;
+  align-items: center;
+  justify-content: center;
+}
+
+#headerText {
+  color: white;
+  background: linear-gradient(45deg, #3f9ccd, #7160d3);
+  background-repeat: no-repeat;
+  padding-left: 144px;
+  margin: 0;
+  padding-bottom: 2em;
+  padding-top: 2em;
+  height: 140px;
+  border-radius: 10px;
+}
+#headerText h1 {
+  font-size: 24px;
+}
+#headerText p {
+  font-size: 16px;
+  line-height: 22px;
+}
+
+#wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+  #supportCheckbox {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+  }
+  #supportCheckbox h4 {
+    margin: 10px 0;
+  }
+  .categoryCheckbox {
+    height: 20px;
+    width: 20px;
+    margin-right: 5px;
+  }
+  #supportList {
+    padding: 0;
+    margin: 5px 0;
+  }
+  #supportList li {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 10px;
+  }
+
+  #catSelector{
+    list-style-type: none;
+    padding: 0;
+    text-align: left;
+    columns: 3;
+    margin-left: 10px;
+}
+
+#catSelector input {
+    zoom: 1.4;
+    -moz-transform: scale(1.4);
+}
+
+#catSelector li {
+    text-transform: capitalize;
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
 }
 
 #attachSection #attachHeader {
@@ -646,6 +852,8 @@ declare var awa: any;
     opacity: 1;
   }
 }
+
+
 
 #hubFooter {
   display: flex;
@@ -776,7 +984,7 @@ h2 {
       }
     }
 
-    input {
+    #getStartedInput {
       background: transparent;
 
       padding-top: 13px;
