@@ -38,6 +38,10 @@
                   <li><input type="checkbox" class="categoryCheckbox" name="Safari" value="Safari"><label for="Safari">Safari</label></li>
                 </ul>
               </div>
+              <div id="screenshotsBox" v-if="manifest"> 
+                <h4> Your screenshots:</h4>
+                <Carousel name="Jaylyn" :screenshots="manifest.screenshots"></Carousel>
+              </div>
               <div id="categoryPicker">
             
                 <h4>  Select the categories that apply to your PWA:</h4>
@@ -46,7 +50,7 @@
                     <input type="checkbox" class="categoryCheckbox" :name="cat" :value="cat"><label :for="cat">{{cat}}</label>
                   </li>
                 </ul>
-                <button id="submitPWA"><p>Submit my PWA!</p></button>
+                <button id="submitPWA" @click="submitPWA()"><p>Submit my PWA!</p></button>
             </div>
             </div>
 
@@ -261,6 +265,8 @@ import HubHeader from "~/components/HubHeader.vue";
 import ScoreCard from "~/components/ScoreCard.vue";
 import FeatureCard from "~/components/FeatureCard.vue";
 import Modal from "~/components/Modal.vue";
+import Carousel from '~/components/Carousel.vue';
+//import { createPR } from '~/utils/pullService.ts'
 
 import * as generator from "~/store/modules/generator";
 
@@ -277,7 +283,8 @@ const WindowsAction = namespace(windowsStore.name, Action);
     HubHeader,
     ScoreCard,
     FeatureCard,
-    Modal
+    Modal,
+    Carousel
   }
 })
 export default class extends Vue {
@@ -306,12 +313,8 @@ export default class extends Vue {
   public modalStatus = false;
   public showBackground: boolean = false;
   public categories: any[] = [];
-  public catVue = new Vue({
-  el: '#catSelector',
-  data: {
-    items: this.categories
-  }
-})
+  public supported: any[] = [];
+  public showcaseManifest: any = null;
 
   public modalOpened() {
     console.log("hit");
@@ -322,6 +325,9 @@ export default class extends Vue {
     this.modalStatus = true;
     this.showBackground = true;
     (this.$refs.PWAShowcaseModal as Modal).show();
+
+    console.log("this.manifest", this.manifest)
+    this.showcaseManifest = this.manifest;
   }
 
   public modalClosed() {
@@ -342,7 +348,84 @@ export default class extends Vue {
     this.categories = data.categories;
 }
 
+  public async submitPWA(){
+    if(this.addSupport()){
+      console.log("okay")
+      this.addCategories();
+    } else {
+      console.error("Must add at least one browser supported.")
+    }
+  }
 
+  public addSupport(){
+        var container = this.$el.querySelector("#supportList");
+        let atleastOne = false;
+
+        if (container){
+          var inputElements = container.querySelectorAll("input");
+        
+          let supportValues = [];
+          
+          if(inputElements){
+              for(let i = 0; i < inputElements.length; i++){
+                  let browser = inputElements[i];
+                  if(browser.checked){
+                      atleastOne = true;
+                      supportValues.push({"browser": browser.value,"support": true});
+                  } else {
+                      supportValues.push({"browser": browser.value,"support": false});
+                  }
+              }
+          }
+          if(atleastOne){
+              this.supported = supportValues;
+          }
+        } 
+          console.log(this.supported);
+          return atleastOne;
+  }
+
+  // should i be making a copy of the manifest to add to the showcase?
+  public async addCategories(){
+    var container = this.$el.querySelector("#catSelector");
+    if(container){
+      var inputElements = container.querySelectorAll("input");
+
+      let catsToAdd = [];
+
+      if(inputElements){
+          for(let i = 0; i < inputElements.length; i++){
+              let category = inputElements[i];
+              if(category.checked){
+                  catsToAdd.push(category.value);
+              }
+          }
+      }
+
+      if(catsToAdd.length > 0 && this.showcaseManifest ){
+          if(this.showcaseManifest.categories){
+              catsToAdd.forEach((cat: any) => this.showcaseManifest.categories.push(cat));
+          } else {
+              this.showcaseManifest.categories = catsToAdd;
+          }
+          try {
+            console.log(this.showcaseManifest);
+            console.log(this.url)
+              //this.showLoader = true
+              //await createPR(this.showcaseManifest, this.url, this.supported);
+              //this.launchFeedbackPage();
+          } catch(error){
+              console.error("PR Failed", error);
+          }
+
+      } else {
+          console.error("You must select at least one category!");
+      }
+      console.log("Showcase manifest", this.showcaseManifest);
+    } else {
+      console.log("Broken.");
+    }
+  }
   
   public async created() {
     this.url$ = this.url;
@@ -358,6 +441,7 @@ export default class extends Vue {
   }
 
   public mounted() {
+    console.log("I am in a lifecycle event, woot woot");
     if (this.url) {
       sessionStorage.setItem("currentURL", this.url);
     }
@@ -720,6 +804,25 @@ declare var awa: any;
   border-radius: 20px;
   height: 40px;
   margin-left: 12px;
+}
+
+#submitPWA {
+  justify-content: center;
+  padding-left: 20px;
+  padding-right: 20px;
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 21px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  background:  #686bd2;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  height: 40px;
 }
 
 #modalBackground {

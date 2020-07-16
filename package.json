@@ -14,7 +14,10 @@
     "test": "mocha --recursive --timeout 20000 uitest"
   },
   "dependencies": {
+    "@material/mwc-button": "^0.17.2",
+    "@material/mwc-dialog": "^0.17.2",
     "@nuxtjs/axios": "^4.5.2",
+    "@octokit/rest": "^18.0.1",
     "@types/downloadjs": "^1.4.1",
     "ajv": "^6.5.4",
     "axios": "^0.18.0",
@@ -30,6 +33,7 @@
     "normalize-scss": "^7.0.1",
     "nuxt": "^1.4.5",
     "nuxt-class-component": "^1.2.1",
+    "octokit-plugin-create-pull-request": "^3.8.1",
     "prismjs": "^1.15.0",
     "sharebutton": "0.6.3",
     "ttf2woff": "^2.0.1",
