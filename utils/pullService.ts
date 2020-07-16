@@ -1,12 +1,18 @@
 // @ts-ignore
-import { Octokit } from "@octokit/rest";
-// @ts-ignore
-import { createPullRequest } from "octokit-plugin-create-pull-request";
-/*
-const MyOctokit = Octokit.plugin(createPullRequest);
-console.log(MyOctokit);
+//import { Octokit } from "@octokit/rest";
+//console.log(Octokit)
 
-const octokit = new MyOctokit({
+const { Octokit } = require("@octokit/core");
+const { createPullRequest } = require("octokit-plugin-create-pull-request");
+
+/*
+// @ts-ignore
+import { createPullRequest } from "https://cdn.pika.dev/octokit-plugin-create-pull-request";*/
+
+/*const MyOctokit = Octokit.plugin(createPullRequest);
+console.log(MyOctokit);*/
+
+/*const octokit = new MyOctokit({
     auth: "7aa04b89db31a2d1195f4493c643b6c47aa7a4ec",
     userAgent: 'PWA-Showcase',
     previews: ['jean-grey', 'symmetra'],

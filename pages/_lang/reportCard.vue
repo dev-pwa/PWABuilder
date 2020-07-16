@@ -40,7 +40,7 @@
               </div>
               <div id="screenshotsBox" v-if="manifest"> 
                 <h4> Your screenshots:</h4>
-                <Carousel name="Jaylyn" :screenshots="manifest.screenshots"></Carousel>
+                <Carousel v-if="manifest.screenshots" :screenshots="manifest.screenshots" ></Carousel>
               </div>
               <div id="categoryPicker">
             
@@ -266,7 +266,7 @@ import ScoreCard from "~/components/ScoreCard.vue";
 import FeatureCard from "~/components/FeatureCard.vue";
 import Modal from "~/components/Modal.vue";
 import Carousel from '~/components/Carousel.vue';
-//import { createPR } from '~/utils/pullService.ts'
+import { test } from '~/utils/pullService.ts'
 
 import * as generator from "~/store/modules/generator";
 
@@ -327,6 +327,10 @@ export default class extends Vue {
     (this.$refs.PWAShowcaseModal as Modal).show();
 
     console.log("this.manifest", this.manifest)
+    console.log("this.manifest.screenshots", this.manifest.screenshots)
+
+    test();
+
     this.showcaseManifest = this.manifest;
   }
 
@@ -412,7 +416,7 @@ export default class extends Vue {
             console.log(this.showcaseManifest);
             console.log(this.url)
               //this.showLoader = true
-              //await createPR(this.showcaseManifest, this.url, this.supported);
+              await createPR(this.showcaseManifest, this.url, this.supported);
               //this.launchFeedbackPage();
           } catch(error){
               console.error("PR Failed", error);

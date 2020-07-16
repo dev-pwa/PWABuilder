@@ -131,7 +131,15 @@ module.exports = {
       {
         src: '/pwa-install.js',
         type: 'module'
-      }
+      },
+      /*{
+        src: "https://cdn.pika.dev/octokit-plugin-create-pull-request",
+        type: 'module'
+      },
+      {
+        src: "https://cdn.pika.dev/@octokit/rest",
+        type: 'module'
+      }*/
     ]
   },
   loading: {
