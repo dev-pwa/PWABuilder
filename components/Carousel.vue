@@ -1,13 +1,14 @@
 <template>
-    <section>
+    <section v-if="screenshots">
         <div id="wrapper">
+          <h4> Your screenshots:</h4>
             <div id="screenshotsBox">
                 <button @click="scrollToLeft()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M401.4 224h-214l83-79.4c11.9-12.5 11.9-32.7 0-45.2s-31.2-12.5-43.2 0L89 233.4c-6 5.8-9 13.7-9 22.4v.4c0 8.7 3 16.6 9 22.4l138.1 134c12 12.5 31.3 12.5 43.2 0 11.9-12.5 11.9-32.7 0-45.2l-83-79.4h214c16.9 0 30.6-14.3 30.6-32 .1-18-13.6-32-30.5-32z"/></svg>
                 </button>
 
                 <section id="screenshots">
-                    <div v-for="i in screenshots" :key="i"> 
+                    <div v-for="i in screenshots" :key="i.sizes"> 
                         <img :src="i.src" alt = "screenshot">
                     </div>
                 </section> 
@@ -28,18 +29,9 @@ import { Prop } from 'vue-property-decorator';
 @Component({})
 export default class extends Vue {
     @Prop({}) public screenshots: any[] | null = null;
-    @Prop({}) name: string;
 
     constructor() {
         super();
-
-        console.log('wut');
-
-        console.log('name', this.name);
-
-        setTimeout(() => {
-            console.log('name', this.name);
-        }, 500);
     }
 
     scrollToLeft(): void {
@@ -78,12 +70,13 @@ export default class extends Vue {
 
     #wrapper{
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
     }
     
     #screenshotsBox {
-        max-height: 220px;
+        max-height: 250px;
         display: flex;
         max-width: 30em;
       }
@@ -111,7 +104,7 @@ export default class extends Vue {
         overflow-y: scroll;
         overflow-y: hidden;
         width: 22em;
-        max-height: 220px;
+        max-height: 250px;
         -webkit-overflow-scrolling: touch
        }
        #screenshots div {

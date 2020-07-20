@@ -2,8 +2,8 @@
 //import { Octokit } from "@octokit/rest";
 //console.log(Octokit)
 
-const { Octokit } = require("@octokit/core");
-const { createPullRequest } = require("octokit-plugin-create-pull-request");
+//const { Octokit } = require("@octokit/core");
+//const { createPullRequest } = require("octokit-plugin-create-pull-request");
 
 /*
 // @ts-ignore

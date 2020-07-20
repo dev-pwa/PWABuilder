@@ -38,9 +38,8 @@
                   <li><input type="checkbox" class="categoryCheckbox" name="Safari" value="Safari"><label for="Safari">Safari</label></li>
                 </ul>
               </div>
-              <div id="screenshotsBox" v-if="manifest"> 
-                <h4> Your screenshots:</h4>
-                <Carousel v-if="manifest.screenshots" :screenshots="manifest.screenshots" ></Carousel>
+              <div id="screenshotsBox" v-if="showcaseManifest"> 
+                <Carousel :screenshots="showcaseManifest.screenshots"></Carousel>
               </div>
               <div id="categoryPicker">
             
@@ -266,7 +265,7 @@ import ScoreCard from "~/components/ScoreCard.vue";
 import FeatureCard from "~/components/FeatureCard.vue";
 import Modal from "~/components/Modal.vue";
 import Carousel from '~/components/Carousel.vue';
-import { test } from '~/utils/pullService.ts'
+//import { test } from '~/utils/pullService.ts'
 
 import * as generator from "~/store/modules/generator";
 
@@ -315,23 +314,24 @@ export default class extends Vue {
   public categories: any[] = [];
   public supported: any[] = [];
   public showcaseManifest: any = null;
+  public screenshots: any[] = [];
 
   public modalOpened() {
-    console.log("hit");
     window.scrollTo(0, 0);
 
+    this.showcaseManifest = JSON.stringify(this.manifest);
+    this.showcaseManifest = JSON.parse(this.showcaseManifest);
+    console.log("new method", this.showcaseManifest);
     this.getCategories();
+    this.checkScreenshots();
 
     this.modalStatus = true;
     this.showBackground = true;
     (this.$refs.PWAShowcaseModal as Modal).show();
 
-    console.log("this.manifest", this.manifest)
-    console.log("this.manifest.screenshots", this.manifest.screenshots)
+    //test();
 
-    test();
-
-    this.showcaseManifest = this.manifest;
+    
   }
 
   public modalClosed() {
@@ -354,12 +354,59 @@ export default class extends Vue {
 
   public async submitPWA(){
     if(this.addSupport()){
-      console.log("okay")
       this.addCategories();
+      //windowsStore.actions.updateShowcaseManifest(this.showcaseManifest.screenshots,this.screenshots);
+      //this.showcaseManifest.screenshots = this.screenshots; //this line of code breaks everything, the screenshots are added though? https://stackoverflow.com/questions/47992120/vue-filter-and-the-do-not-mutate-vuex-store-state-outside-mutation-handlers
+      console.log("should have screenshots", this.showcaseManifest)
     } else {
       console.error("Must add at least one browser supported.")
     }
   }
+
+ 
+  public async checkScreenshots(){
+    console.log("checking screenshots");
+    console.log("showcase mani", this.showcaseManifest)
+    if(!this.showcaseManifest.screenshots || this.showcaseManifest.screenshots.length === 0){
+      console.log("hit bc no screenshots in manifest");
+      await this.fetchScreenshots([this.url]);
+      this.screenshots.forEach(shot => {
+          shot.src = "data:image/jpeg;base64, " + shot.src                
+      });
+      this.showcaseManifest.screenshots = this.screenshots;
+    } else {
+      console.log("hit bc screenshots in manifest");
+      this.screenshots = this.showcaseManifest.screenshots;
+      this.showcaseManifest.screenshots.forEach((shot: any) => {
+          shot.src = this.showcaseManifest ? this.showcaseManifest.start_url + shot.src : "";          
+      });
+      
+    }
+  }
+
+ 
+  public async fetchScreenshots(urls: any[]){
+    return new Promise(async (resolve, reject) => {
+      await fetch('https://pwa-screenshots.azurewebsites.net' + '/screenshotsAsBase64Strings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: urls })
+      }).then((res) => {
+        res.json().then((jsonData) => {
+          console.log(jsonData);
+          this.screenshots = jsonData.images;
+          resolve(this.screenshots);
+        })
+        .catch((err) => {
+          reject(err);
+        })
+    })
+
+    })
+  }
+  
 
   public addSupport(){
         var container = this.$el.querySelector("#supportList");
@@ -416,7 +463,7 @@ export default class extends Vue {
             console.log(this.showcaseManifest);
             console.log(this.url)
               //this.showLoader = true
-              await createPR(this.showcaseManifest, this.url, this.supported);
+              //await createPR(this.showcaseManifest, this.url, this.supported);
               //this.launchFeedbackPage();
           } catch(error){
               console.error("PR Failed", error);
