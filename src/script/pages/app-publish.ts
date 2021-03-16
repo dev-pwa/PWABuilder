@@ -36,7 +36,7 @@ import {
 import style from '../../../styles/layout-defaults.css';
 import { fileSave } from 'browser-fs-access';
 import { fetchManifest, getManifest } from '../services/manifest';
-import { getURL } from '../services/app-info';
+import { canBeGenerated, getURL } from '../services/app-info';
 import { Manifest } from '../utils/interfaces';
 
 @customElement('app-publish')
@@ -240,6 +240,10 @@ export class AppPublish extends LitElement {
         )}
       `,
     ];
+  }
+
+  firstUpdated() {
+    canBeGenerated();
   }
 
   async grabBackupManifest() {

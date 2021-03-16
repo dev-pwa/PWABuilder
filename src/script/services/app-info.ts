@@ -4,6 +4,7 @@ import {
   RawTestResult,
   Status,
 } from '../utils/interfaces';
+import { getManifest } from './manifest';
 
 let site_url: string | undefined;
 let results: RawTestResult | undefined;
@@ -121,4 +122,12 @@ export function getResults(): RawTestResult | undefined {
       return undefined;
     }
   }
+}
+
+export function canBeGenerated() {
+  const manifest = getManifest();
+  const results = getResults();
+
+  console.log('manifest', manifest);
+  console.log('results', results);
 }
