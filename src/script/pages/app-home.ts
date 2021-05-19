@@ -283,19 +283,36 @@ export class AppHome extends LitElement {
           const goodURL = getURL();
 
           if (goodURL !== undefined) {
-            // couldnt get manifest, thats ok
-            // lets continue forward with the default
-            // zeroed out results.
             Router.go(`/testing?site=${goodURL}`);
           }
         }
       } catch (err) {
-        console.error('Error getting site', err.message);
+        if (typeof (err) === "string" && !err.includes("invalid")) {
+          // we have rejected as the url entered was incorrect
+          // but our manifest service was able to convert to a URL
+          // Lets now go forward with the good URL instead of bothering
+          // the user.
+          const actualGoodUrl = err;
 
-        this.gettingManifest = false;
+          await fetchManifest(actualGoodUrl);
 
-        this.errorGettingURL = true;
-        this.errorMessage = `${err.message}: Check that the URL you entered is live.`;
+          this.errorGettingURL = false;
+          this.errorMessage = undefined;
+
+          const progress = getProgress();
+          this.updateProgress(progress);
+
+          Router.go(`/testing?site=${actualGoodUrl}`);
+        }
+        else {
+          // The URL entered is most likely a completely invalid URL
+          // or is not live
+          this.gettingManifest = false;
+  
+          this.errorGettingURL = true;
+          this.errorMessage = `${err.message}: Check that the URL you entered is valid.`;
+        }
+
       }
 
       this.gettingManifest = false;

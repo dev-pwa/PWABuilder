@@ -16,7 +16,7 @@ export const emitter = new EventTarget();
 let manifest: Lazy<Manifest>;
 let maniURL: Lazy<string>;
 
-let generatedManifest: Lazy<Manifest>;
+let generatedManifest: Lazy<ManifestDetectionResult>;
 
 // Uses Azure manifest Puppeteer service to fetch the manifest, then POSTS it to the API.
 async function getManifestViaFilePost(
@@ -148,17 +148,31 @@ export async function fetchManifest(
       maniURL = result.generatedUrl;
       resolve(result);
     } catch (manifestDetectionError) {
-      console.error('All manifest detectors failed.', manifestDetectionError);
+      console.warn('All manifest detectors failed.', manifestDetectionError);
 
       try {
         // no manifest detected, lets generate one
-        generatedManifest = await (await generateManifest(url)).content;
+        generatedManifest = await (await generateManifest(url));
+
+        if (generatedManifest.error) {
+          // site cannot be reached and manifest service
+          // could not find a good URL
+          reject(manifestDetectionError);
+        }
+        else {
+          // Manifest service found a good URL, lets reject with the good URL
+          // The home page will handle this and move forward without bothering the user
+          const goodURLFromGenerated = new URL(generatedManifest.generatedUrl);
+  
+          setURL(goodURLFromGenerated.origin);
+  
+          reject(goodURLFromGenerated.origin);
+        }
+        
       }
-      catch (err) {
-        // Well, we sure tried but we could not even generate a manifest
-        // most likely the URL is not a live URL
+      catch(err) {
         reject(manifestDetectionError);
-      }
+      } 
     }
   });
 }
@@ -200,7 +214,7 @@ export function getManifest(): Manifest | undefined {
 }
 
 export function getGeneratedManifest() {
-  return generatedManifest;
+  return generatedManifest?.content;
 }
 
 async function generateManifest(url: string): Promise<ManifestDetectionResult> {
@@ -215,10 +229,10 @@ async function generateManifest(url: string): Promise<ManifestDetectionResult> {
 
     const data = await response.json();
 
-    return data?.content;
+    return data;
   } catch (err) {
-    console.error(`Error generating manifest: ${err}`);
-    return err;
+    console.log(`Error generating manifest: ${err}`);
+    throw err;
   }
 }
 
