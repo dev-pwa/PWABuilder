@@ -268,10 +268,12 @@ export class AppHome extends LitElement {
         const data = await fetchManifest(this.siteURL);
 
         if (data.error) {
+          console.log('in here 1')
           this.errorGettingURL = true;
           this.errorMessage = data.error;
           throw new Error(`Error getting URL: ${data.error}`);
         } else {
+          console.log('in here 2');
           this.errorGettingURL = false;
           this.errorMessage = undefined;
 
@@ -293,7 +295,7 @@ export class AppHome extends LitElement {
         this.gettingManifest = false;
 
         this.errorGettingURL = true;
-        this.errorMessage = err;
+        this.errorMessage = `${err.message}: Check that the URL you entered is live.`;
       }
 
       this.gettingManifest = false;

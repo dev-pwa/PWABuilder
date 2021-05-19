@@ -150,10 +150,15 @@ export async function fetchManifest(
     } catch (manifestDetectionError) {
       console.error('All manifest detectors failed.', manifestDetectionError);
 
-      generatedManifest = await (await generateManifest(url)).content;
-
-      // Well, we sure tried.
-      reject(manifestDetectionError);
+      try {
+        // no manifest detected, lets generate one
+        generatedManifest = await (await generateManifest(url)).content;
+      }
+      catch (err) {
+        // Well, we sure tried but we could not even generate a manifest
+        // most likely the URL is not a live URL
+        reject(manifestDetectionError);
+      }
     }
   });
 }

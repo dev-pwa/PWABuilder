@@ -10,7 +10,7 @@ export function isUrl(url: string): boolean {
   return false;
 }
 
-export function resolveUrl(
+export function resolveUrlForManifest(
   baseUrl: string | undefined | null,
   url: string | undefined | null
 ): URL | undefined {
@@ -55,36 +55,29 @@ export function validateUrl(url: string, base?: string): string | null {
 }
 
 export async function cleanUrl(url: string) {
-  let cleanedUrl: string | undefined;
+  // let cleanedUrl: string | undefined;
+  let initialUrl: URL | string | undefined;
 
-  if (url && !url.startsWith('http') && !url.startsWith('https')) {
-    cleanedUrl = 'https://' + url;
-  }
-
-  if (cleanedUrl) {
-    const test = await isValidUrl(cleanedUrl);
-
-    if (
-      test.message !== undefined &&
-      !url.toLowerCase().startsWith('http://')
-    ) {
-      throw `${test.message}: this error means that you may have a bad https cert or the url may not be correct`;
-    } else {
-      return cleanedUrl;
-    }
-  } else {
-    // original URL is ok
-    return url;
-  }
-}
-
-async function isValidUrl(url: string) {
+  // initial test, checking if entered URL is a valid URL
   try {
-    return await fetch(url, {
-      mode: 'no-cors',
-      credentials: 'include',
-    });
-  } catch (err) {
-    return err;
+    initialUrl = new URL(url);
+    return initialUrl;
+  }
+  catch (err) {
+    try {
+      // Its not, so lets try https + www and return if good
+      initialUrl = new URL(`https://www.${url}`);
+      return initialUrl;
+    }
+    catch (err) {
+      try {
+        // last try with no www
+        initialUrl = new URL('https://' + url);
+        return initialUrl;
+      }
+      catch(err) {
+        throw `${err.message}: this error means that you may have a bad https cert or the url may not be correct`;
+      }
+    }
   }
 }

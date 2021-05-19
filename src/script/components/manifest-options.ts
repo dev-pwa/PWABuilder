@@ -13,7 +13,7 @@ import {
   updateManifest,
 } from '../services/manifest';
 import { arrayHasChanged, objectHasChanged } from '../utils/hasChanged';
-import { resolveUrl } from '../utils/url';
+import { resolveUrlForManifest } from '../utils/url';
 import {
   AppEvents,
   FileInputDetails,
@@ -892,8 +892,8 @@ export class AppManifest extends LitElement {
       return icon.src;
     }
 
-    let url = resolveUrl(this.siteUrl, this.manifest?.startUrl);
-    url = resolveUrl(url?.href, icon.src);
+    let url = resolveUrlForManifest(this.siteUrl, this.manifest?.startUrl);
+    url = resolveUrlForManifest(url?.href, icon.src);
 
     if (url) {
       return url.href;
