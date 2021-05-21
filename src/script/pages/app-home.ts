@@ -3,6 +3,7 @@ import { LitElement, css, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
 import { classMap } from 'lit/directives/class-map.js';
+import { localeStrings } from '../../locales';
 
 import {
   smallBreakPoint,
@@ -134,6 +135,10 @@ export class AppHome extends LitElement {
             font-size: var(--large-font-size);
           }
 
+          #start-button {
+            margin-top: 16px;
+          }
+
           #hero-p {
             line-height: 22px;
           }
@@ -199,6 +204,10 @@ export class AppHome extends LitElement {
 
           #input-block {
             margin-bottom: 30px;
+          }
+
+          #start-button {
+            margin-top: 45px;
           }
         `)}
 
@@ -268,12 +277,22 @@ export class AppHome extends LitElement {
         const data = await fetchManifest(this.siteURL);
 
         if (data.error) {
+<<<<<<< HEAD
           console.log('in here 1')
+=======
+          console.log('data.error', data);
+
+>>>>>>> v3.0
           this.errorGettingURL = true;
           this.errorMessage = data.error;
           throw new Error(`Error getting URL: ${data.error}`);
         } else {
+<<<<<<< HEAD
           console.log('in here 2');
+=======
+          console.log('not data.error', data);
+
+>>>>>>> v3.0
           this.errorGettingURL = false;
           this.errorMessage = undefined;
 
@@ -287,12 +306,17 @@ export class AppHome extends LitElement {
           }
         }
       } catch (err) {
+<<<<<<< HEAD
         if (typeof (err) === "string" && !err.includes("invalid")) {
           // we have rejected as the url entered was incorrect
           // but our manifest service was able to convert to a URL
           // Lets now go forward with the good URL instead of bothering
           // the user.
           const actualGoodUrl = err;
+=======
+        console.log(err, typeof err, err.message);
+        console.error('Error getting site', err.message);
+>>>>>>> v3.0
 
           await fetchManifest(actualGoodUrl);
 
@@ -313,6 +337,16 @@ export class AppHome extends LitElement {
           this.errorMessage = `${err.message}: Check that the URL you entered is valid.`;
         }
 
+<<<<<<< HEAD
+=======
+        this.errorGettingURL = true;
+
+        if (err.message === 'All promises were rejected') {
+          this.errorMessage = localeStrings.input.home.error.promises;
+        } else {
+          this.errorMessage = err;
+        }
+>>>>>>> v3.0
       }
 
       this.gettingManifest = false;
@@ -395,6 +429,7 @@ export class AppHome extends LitElement {
           </div>
 
           <loading-button
+            id="start-button"
             type="submit"
             class="navigation"
             ?loading="${this.gettingManifest}"
