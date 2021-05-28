@@ -419,7 +419,14 @@ export class AppManifest extends LitElement {
   }
 
   async firstUpdated() {
-    this.manifest = await getManifest();
+    console.log('firstupdated');
+    try {
+      this.manifest = await getManifest();
+      console.log('this.manifest', this.manifest);
+    }
+    catch (err) {
+      console.error(err);
+    }
   }
 
   render() {
@@ -567,6 +574,7 @@ export class AppManifest extends LitElement {
   }
 
   renderInfoItems() {
+    console.log('this.manifest', this.manifest);
     return infoItems.map(item => {
       const value = this.manifest
         ? (this.manifest[item.entry] as string)

@@ -167,40 +167,48 @@ export function getManiURL() {
 }
 
 export async function getManifest(): Promise<Manifest | undefined> {
+  return new Promise(async (resolve, reject) => {
+    if (manifest) {
+      console.log('returning manifest 1');
+      resolve(manifest);
+    }
+  
+    // no manifest object yet, so lets try to grab one
+    const search = new URLSearchParams(location.search);
+    const url: string | null = maniURL || search.get('site');
+  
+    try {
+      if (url) {
+        const response = await fetchManifest(url);
+  
+        if (response) {
+          console.log('returning manifest 2');
+          await updateManifest(response.content);
+          resolve(response.content);
+        }
+      }
+    } catch (err) {
+      // the above will error if the site has no manifest of its own,
+      // we will then return our generated manifest
+      if (url) {
+        const response = await generateManifest(url);
+        console.log('generatedManifest', generatedManifest);
+  
+        if (response) {
+          generatedManifest = (response as any);
+          console.log('returning manifest 3', response);
+          try {
+            await updateManifest(response);
+            resolve(generatedManifest)
+          }
+          catch (err) {
+            reject(err);
+          }
 
-  if (manifest) {
-    return manifest;
-  }
-
-  // no manifest object yet, so lets try to grab one
-  const search = new URLSearchParams(location.search);
-  const url: string | null = maniURL || search.get('site');
-
-  try {
-    if (url) {
-      const response = await fetchManifest(url);
-
-      if (response) {
-        updateManifest(response.content);
-        return;
+        }
       }
     }
-  }
-  catch(err) {
-    // the above will error if the site has no manifest of its own, 
-    // we will then return our generated manifest
-    if (url) {
-      const response = await generateManifest(url);
-
-      if (response) {
-        generatedManifest = response.content;
-        return generatedManifest;
-      }
-    }
-  }
-
-  // if all else fails, lets just return undefined
-  return undefined;
+  });
 }
 
 export function getGeneratedManifest() {
@@ -232,9 +240,28 @@ export async function updateManifest(manifestUpdates: Partial<Manifest>) {
   // so we should only load it once its actually needed
   await import('https://unpkg.com/deepmerge@4.2.2/dist/umd.js');
 
-  manifest = deepmerge(manifest as Manifest, manifestUpdates as Manifest, {
-    // customMerge: customManifestMerge, // NOTE: need to manually concat with editor changes.
-  });
+  /*manifest = deepmerge(
+    (manifest as Manifest) || (generatedManifest as Manifest),
+    manifestUpdates as Manifest,
+    {
+      // customMerge: customManifestMerge, // NOTE: need to manually concat with editor changes.
+    }
+  );*/
+
+  if (manifest) {
+    manifest = deepmerge(
+      (manifest as Manifest),
+      manifestUpdates as Manifest,
+      {
+        // customMerge: customManifestMerge, // NOTE: need to manually concat with editor changes.
+      }
+    );
+  }
+  else {
+    manifest = (manifestUpdates as Manifest);
+  }
+
+  console.log('manifest updates', manifestUpdates);
 
   emitter.dispatchEvent(
     updateManifestEvent({
